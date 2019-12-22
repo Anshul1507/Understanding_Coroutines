@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 class MainActivity : AppCompatActivity() {
 
     private val RESULT_1 = "Result #1"
+    private val RESULT_2 = "Result #2"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,14 +45,22 @@ class MainActivity : AppCompatActivity() {
         val result1 = getResult1FromApi()
         print("debug: $result1")
         setTextOnMainThread(result1)
+
+        val result2 = getResult2FromApi()
+        setTextOnMainThread(result2)
     }
     private suspend fun getResult1FromApi(): String{
         logThread("getResultFromApi")
         delay(1000) //delay current co-routine
-        Thread.sleep(1000) //delay whole thread
+//        Thread.sleep(1000) //delay whole thread
         return RESULT_1
     }
 
+    private suspend fun getResult2FromApi(): String{
+        logThread("getResult2FromApi")
+        delay(1000)
+        return RESULT_2
+    }
     private fun logThread(methodName: String){
         println("debug: ${methodName}: ${Thread.currentThread().name}")
     }
