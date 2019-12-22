@@ -3,17 +3,15 @@ package com.example.understanding_coroutines
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
     private val RESULT_1 = "Result #1"
     private val RESULT_2 = "Result #2"
+    val JOB_TIMEOUT = 1900L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,12 +22,40 @@ class MainActivity : AppCompatActivity() {
              Main -> In main Threads and interacting with the UI,
              Default -> heavy computational work
              */
-            CoroutineScope(IO).launch {
-                fakeApiRequest()
+            setNewText("Click!")
+            CoroutineScope(Main).launch {
+                    fakeApiRequest()
             }
 
         }
     }
+
+    //For Network Time-outs
+    private suspend fun fakeApiRequest(){
+        withContext(IO) {
+            val job = withTimeoutOrNull(JOB_TIMEOUT) {
+
+                //timeout bcz we set limit for 1900 and we are
+                // requesting two req for 1000s each.
+
+                val result1 = getResult1FromApi()
+                setTextOnMainThread("Got $result1")
+
+                val result2 = getResult2FromApi("result2")
+                setTextOnMainThread("Got $result2")
+
+                println("result #1: ${result1}")
+            }
+
+            //checking about job status
+            if(job == null){
+                val cancelMessage = "Cancelling job... Job took longer than $JOB_TIMEOUT ms"
+                println("debug: $cancelMessage")
+                setTextOnMainThread(cancelMessage)
+            }
+        }
+    }
+
 
     private fun setNewText(input: String){
         val newText = text.text.toString() + "\n$input"
@@ -41,18 +67,17 @@ class MainActivity : AppCompatActivity() {
             setNewText(input)
         }
     }
-    private suspend fun fakeApiRequest(){
-        val result1 = getResult1FromApi()
-        print("debug: $result1")
-        setTextOnMainThread(result1)
-
-        val result2 = getResult2FromApi(result1)
-        setTextOnMainThread(result2)
-    }
+//    private suspend fun fakeApiRequest(){
+//        val result1 = getResult1FromApi()
+//        print("debug: $result1")
+//        setTextOnMainThread(result1)
+//
+//        val result2 = getResult2FromApi(result1)
+//        setTextOnMainThread(result2)
+//    }
     private suspend fun getResult1FromApi(): String{
         logThread("getResultFromApi")
         delay(1000) //delay current co-routine
-//        Thread.sleep(1000) //delay whole thread
         return RESULT_1
     }
 
