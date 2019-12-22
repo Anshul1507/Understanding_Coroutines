@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         print("debug: $result1")
         setTextOnMainThread(result1)
 
-        val result2 = getResult2FromApi()
+        val result2 = getResult2FromApi(result1)
         setTextOnMainThread(result2)
     }
     private suspend fun getResult1FromApi(): String{
@@ -56,10 +56,10 @@ class MainActivity : AppCompatActivity() {
         return RESULT_1
     }
 
-    private suspend fun getResult2FromApi(): String{
+    private suspend fun getResult2FromApi(result1 : String): String{
         logThread("getResult2FromApi")
         delay(1000)
-        return RESULT_2
+        return result1
     }
     private fun logThread(methodName: String){
         println("debug: ${methodName}: ${Thread.currentThread().name}")
